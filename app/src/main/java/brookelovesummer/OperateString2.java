@@ -12,6 +12,7 @@ public class OperateString2 {
     public int rpra = 0;
 
     public OperateString2() {
+
         char pi = '\u03C0';
         for(int j=0;j<=9;j++)
             numbers.add((char)('0'+j));
@@ -41,14 +42,22 @@ public class OperateString2 {
      * @return
      */
     public String calculate(String text) {
+
         flag = true;
+
+        int points = 0;
+        for (int i = 0; i < text.length(); ++i) {
+            if (text.charAt(i) == '.') ++points;
+            if (points > 1) return "错误";
+            // 表达式错误：多个小数点！
+        }
         if(bracounts(text,'(') != bracounts(text,')')) {
             // 表达式错误：括号不成对！
             return "错误";
         }
 
         String result = operate(text);
-        if (!flag) return "错误";
+        if (result == null || !flag) return "错误";
 
         if(Math.abs(Double.parseDouble(result))<1E-13) result="0";
         if(Math.abs(Double.parseDouble(result))>1E15) {
@@ -59,7 +68,7 @@ public class OperateString2 {
         }
 
         if(!result.contains("E")) {
-            if(Double.parseDouble(result)< 256 && result.length() - result.indexOf(".") > 5)
+            if(result.contains(".") && result.length() - result.indexOf(".") > 5)
                 result = result.substring(0, result.indexOf(".")+6);
         }
 
@@ -73,27 +82,30 @@ public class OperateString2 {
      */
     private String operate(String text) {
         //[((() () )  )]  || [() () ()] ||[((())) ()]
+
+        if (text == null || text.isEmpty()) return null;
         if (!text.contains("(") && !text.contains(")")) {
-            text = caculator(text);
-            while(!isnumber(text)) {
-                text = caculator(text);
-            }
+            do {
+                text = calculator(text);
+                if (text == null) return null;
+            } while (!isnumber(text));
             return text;
         }
 
         int[] bracketsindex = getbracketsindex(text);
-        System.out.println("text = "+text);
-        System.out.println(bracketsindex[0]+"***"+bracketsindex[1]);
         String brooke = text.substring(bracketsindex[0]+1, bracketsindex[1]);
-        brooke = operate(brooke);//digui去除级联型括号
+        brooke = operate(brooke);//递归去除级联型括号
+        if (brooke == null) return null;
 
         String funname = getfunname(text,bracketsindex[0]);
         text = text.replace(text.substring(help,bracketsindex[1]+1),doubletostring(str_fun01(funname,Double.parseDouble(brooke))));
         if (text.contains("("))
-            text = operate(text);//digui去除并联型括号
+            text = operate(text);//递归去除并联型括号
+        if (text == null) return null;
 
         while(!isnumber(text)) {
-            text = caculator(text);
+            text = calculator(text);
+            if (text == null) return null;
         }
 
         return text;
@@ -105,6 +117,7 @@ public class OperateString2 {
      * @return
      */
     private boolean isnumber(String text) {
+
         text = operatenage(text);
         char[] s = text.toCharArray();
         for(int i=0;i<s.length;i++) {
@@ -122,6 +135,7 @@ public class OperateString2 {
      * @return
      */
     private String getfunname(String text, int lbraindex) {
+
         text = operatenage(text);
         char[] s = text.toCharArray();
         int i = lbraindex - 1;
@@ -140,6 +154,7 @@ public class OperateString2 {
      * @return
      */
     private int[] getbracketsindex(String text) {
+
         // find a pair brackets
         int lindex = text.indexOf("(");
         int num = 1 , rindex = lindex;
@@ -160,69 +175,60 @@ public class OperateString2 {
      * @param text
      * @return
      */
-    private String caculator(String text) {
-        //Double.parseDouble(string) convert string to double
-        //String.valueOf(double) convert double to string
-        if(isnegative(text))
-            return text;
+    private String calculator(String text) {
 
-        text =  stradjust(text);
-        if(isnumber(text))
-            return text;
+        text = stradjust(text);
 
+        if(isnumber(text)) {
+            text = text.replace('$', '-');
+            return text;
+        }
+
+        boolean calculated = false;
         char[] s = text.toCharArray();
 
         if(text.contains("^")||text.contains("√")) {
             for (int i=0;i<s.length;i++)
                 if(s[i] == '^' || s[i] == '√') {
                     text = gettext(text,s[i],i);
+                    if (text == null) return null;
                     i=0;
                     s = text.toCharArray();
+                    calculated = true;
                 }
         }
-
         if(text.contains("!")||text.contains("%")) {
             for (int i=0;i<s.length;i++)
                 if(s[i] == '!' || s[i] == '%') {
                     text = gettext(text,s[i],i);
+                    if (text == null) return null;
                     i=0;
                     s = text.toCharArray();
+                    calculated = true;
                 }
         }
         if(text.contains("*")||text.contains("/")) {
             for (int i=0;i<s.length;i++)
                 if(s[i] == '*' || s[i] == '/') {
                     text = gettext(text,s[i],i);
+                    if (text == null) return null;
                     i=0;
                     s = text.toCharArray();
+                    calculated = true;
                 }
         }
         if(text.contains("+")||operatenage(text).contains("-")) {
             for (int i=0;i<s.length;i++)
                 if(s[i] == '+' || s[i] == '-') {
                     text = gettext(text,s[i],i);
-                    s = text.toCharArray();
+                    if (text == null) return null;
                     i=0;
+                    s = text.toCharArray();
+                    calculated = true;
                 }
         }
+        if (!calculated) return null;
         return text;
-    }
-
-    /**
-     * 判断是否为纯负数
-     * @return
-     */
-    private boolean isnegative(String text) {
-        char[] s = text.toCharArray();
-        boolean flag = true;
-        for(int i=1;i<s.length;i++) {
-            if(!numbers.contains(s[i]))
-                flag = false;
-        }
-        if(s[0] == '-' && flag)
-            return true;
-        else
-            return false;
     }
 
     /**
@@ -231,6 +237,7 @@ public class OperateString2 {
      * @return
      */
     private String operatenage(String text) {
+
         if(!text.contains("-"))
             return text;
         text = text.replace("--", "+");
@@ -252,9 +259,10 @@ public class OperateString2 {
      * @return
      */
     private String gettext(String text ,char ch ,int index) {
-        System.out.println("ch="+ch);//输出当前运算符
+
         text = operatenage(text);
         double[] dob = getparams(text,index);
+        if (dob == null) return null;
 
         if(ch == '√')
             text = text.replace(text.substring(index,rpra),""+doubletostring(str_fun01(""+ch,dob[1])));
@@ -272,6 +280,7 @@ public class OperateString2 {
      * @return
      */
     private String stradjust(String text) {
+
         if(text.contains("\u03C0")) {
             text = text.replace("\u03C0", String.valueOf(Math.PI));
             return stradjust(text);
@@ -280,7 +289,6 @@ public class OperateString2 {
             text = text.replace("e", String.valueOf(Math.E));
             return stradjust(text);
         }
-
         return operatenage(text);
     }
 
@@ -292,6 +300,7 @@ public class OperateString2 {
      * @return
      */
     private double[] getparams(String text ,int ch_index) {
+
         double lparam = 0,rparam = 0;
         char[] s = text.toCharArray();
         int i = ch_index-1;//So important too
@@ -301,14 +310,10 @@ public class OperateString2 {
             while(i >= 0 && numbers.contains(s[i])) {
                 i--;
             }
-            if(i<0) {
-                lparam = Double.parseDouble(text.substring(i+1,ch_index).replace('$', '-')) ;
-                lpra = i+1;
-            }
-            else {
-                lparam = Double.parseDouble(text.substring(i+1,ch_index).replace('$', '-')) ;
-                lpra = i+1;
-            }
+            String temp = text.substring(i+1,ch_index).replace('$', '-');
+            if (temp.isEmpty()) return null;
+            lparam = Double.parseDouble(temp);
+            lpra = i+1;
         }
 
         // find right parameter
@@ -317,17 +322,13 @@ public class OperateString2 {
             while(i<s.length && numbers.contains(s[i])) {
                 i++;
             }
-            if(i >= s.length) {
-                rparam = Double.parseDouble(text.substring(ch_index+1,i).replace('$', '-')) ;
-                rpra = i;
-            }
-            else {
-                rparam = Double.parseDouble(text.substring(ch_index+1,i).replace('$', '-')) ;
-                rpra = i;
-            }
+            String temp = text.substring(ch_index+1,i).replace('$', '-');
+            if (temp.isEmpty()) return null;
+            rparam = Double.parseDouble(temp);
+            rpra = i;
         }
 
-        return new double[] {lparam,rparam};
+        return new double[] {lparam, rparam};
     }
 
     /**
@@ -336,6 +337,7 @@ public class OperateString2 {
      * @return
      */
     private String doubletostring(double dob) {
+
         if(dob == (int)dob)
             return ""+(int)dob;
         else
@@ -369,32 +371,12 @@ public class OperateString2 {
 
         double param = 0;
         switch(fun) {
-            case "sin":
-                param = Math.sin(x);break;
-            case "cos":
-                param = Math.cos(x);break;
-            case "tan":
-                param = Math.tan(x);break;
-            case "lg":{
-                if (x <= 0) {
-                    // 错误：lg 或 ln 真数只能为正数！
-                    flag = false;
-                }
-                else
-                    param = Math.log10(x);
-                break;
-            }
-            case "ln":{
-                if (x <= 0) {
-                    // 错误：lg 或 ln 真数只能为正数！
-                    flag = false;
-                }
-                else
-                    param = Math.log(x);
-                break;
-            }
+            case "$":
+                param = x*(-1); break;
             case "%":
-                param = x*0.01;break;
+                param = x*0.01; break;
+            case "(":
+                param = x; break;
             case "!" :{
                 if(x<0) {
                     // 错误：阶乘函数参数只能为非负整数！
@@ -404,7 +386,7 @@ public class OperateString2 {
                     flag = false;
                 }
                 else
-                    param = (double)factorial((int)x);
+                    param = (double) factorial((int) x);
                 break;
             }
             case "√":{//genhao
@@ -416,10 +398,38 @@ public class OperateString2 {
                     param = Math.pow(x, 0.5);
                 break;
             }
-            case "(":
-                param = x; break;
-            case "$":
-                param = x*(-1); break;
+            case "ln":{
+                if (x <= 0) {
+                    // 错误：lg 或 ln 真数只能为正数！
+                    flag = false;
+                }
+                else
+                    param = Math.log(x);
+                break;
+            }
+            case "lg":{
+                if (x <= 0) {
+                    // 错误：lg 或 ln 真数只能为正数！
+                    flag = false;
+                }
+                else
+                    param = Math.log10(x);
+                break;
+            }
+            case "sin":
+                param = Math.sin(x);break;
+            case "cos":
+                param = Math.cos(x);break;
+            case "tan":
+                param = Math.tan(x);break;
+            case "arcsin":
+                param = Math.asin(x);break;
+            case "arccos":
+                param = Math.acos(x);break;
+            case "arctan":
+                param = Math.atan(x);break;
+            default:
+                flag = false; break;
         }
         return param;
     }
@@ -432,6 +442,7 @@ public class OperateString2 {
      * @return
      */
     private double str_fun02(String fun,double x,double y) {
+
         double param = 0;
         switch(fun) {
             case "^":{
@@ -462,6 +473,7 @@ public class OperateString2 {
                 break;
 
             }
+            default: flag = false; break;
         }
         return param;
     }
@@ -472,20 +484,10 @@ public class OperateString2 {
      * @return
      */
     private int factorial(int n) {
+
         if(n == 0)
             return 1;
         return n*factorial(n-1);
-    }
-
-    /**
-     * Test
-     * @param args
-     */
-    public static void main(String[] args) {
-//
-//		String str = "99!";//0.009^2 √(-1) √0.09  0^(-1)
-//		System.out.println(test.calculate(str));
-//		System.out.println(Double.MAX_VALUE);//2147483647  16!=2004189184
     }
 }
 

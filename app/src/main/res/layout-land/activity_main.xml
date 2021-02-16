@@ -370,15 +370,15 @@
             android:layout_weight="1"
             android:paddingHorizontal="4dp">
 
-            <Button
+            <ToggleButton
                 android:id="@+id/button_shift"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_marginHorizontal="4dp"
                 android:layout_weight="1"
-                android:onClick="onClick"
-                android:text="Shift"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textOff="Shift"
+                android:textOn="Shift" />
 
             <Button
                 android:id="@+id/button_rad"

@@ -3,8 +3,10 @@ package cn.edu.dlut.mail.wuchen2020.calculator;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
 
     TextView textLast;
     TextView textInput;
+    ToggleButton buttonShift;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Calculator - wc");
         if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             getSupportActionBar().hide();
+            buttonShift = findViewById(R.id.button_shift);
+            buttonShift.setOnClickListener(this::onShiftClick);
         }
         textLast = findViewById(R.id.text_last);
         textInput = findViewById(R.id.text_input);
@@ -102,13 +107,11 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.button_e) {
             append("e");
         } else if (id == R.id.button_sin) {
-            append("sin(");
+            append(!buttonShift.isChecked() ? "sin(" : "arcsin(");
         } else if (id == R.id.button_cos) {
-            append("cos(");
+            append(!buttonShift.isChecked() ? "cos(" : "arccos(");
         } else if (id == R.id.button_tan) {
-            append("tan(");
-        } else if (id == R.id.button_shift) {
-            toast("尚未实现哦~");
+            append(!buttonShift.isChecked() ? "tan(" : "arctan(");
         } else if (id == R.id.button_rad) {
             toast("尚未实现哦~");
         } else if (id == R.id.button_pi) {
@@ -121,6 +124,18 @@ public class MainActivity extends AppCompatActivity {
             calc();
         } else {
             toast("错误: 无效的按钮");
+        }
+    }
+
+    public void onShiftClick(View view) {
+        if (buttonShift.isChecked()) {
+            ((Button) findViewById(R.id.button_sin)).setText("sin⁻¹");
+            ((Button) findViewById(R.id.button_cos)).setText("cos⁻¹");
+            ((Button) findViewById(R.id.button_tan)).setText("tan⁻¹");
+        } else {
+            ((Button) findViewById(R.id.button_sin)).setText("sin");
+            ((Button) findViewById(R.id.button_cos)).setText("cos");
+            ((Button) findViewById(R.id.button_tan)).setText("tan");
         }
     }
 
