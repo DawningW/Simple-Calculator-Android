@@ -13,12 +13,11 @@ public class OperateString2 {
 
     public OperateString2() {
 
-        char pi = '\u03C0';
         for(int j=0;j<=9;j++)
             numbers.add((char)('0'+j));
+        numbers.add('π');
         numbers.add('e');
         numbers.add('E');
-        numbers.add(pi);
         numbers.add('.');
         numbers.add('$');//'-'
 
@@ -33,7 +32,6 @@ public class OperateString2 {
         operator.add('%');
         operator.add('!');
     }
-
 
     /**
      * Calculate rules(有括号先算括号里面，先乘方（开方），再乘除，最后加减！)
@@ -244,7 +242,7 @@ public class OperateString2 {
         char[] s = text.toCharArray();
         if(s[0] == '-') s[0] = '$';
         for(int i=1;i<s.length;i++) {
-            if(s[i] == '-' && (s[i-1]=='E' || !numbers.contains(s[i-1])))
+            if(s[i] == '-' && s[i-1] != '!' && (s[i-1]=='E' || !numbers.contains(s[i-1])))
                 s[i] = '$';
         }
         text = new String(s);
@@ -258,7 +256,7 @@ public class OperateString2 {
      * @param index
      * @return
      */
-    private String gettext(String text ,char ch ,int index) {
+    private String gettext(String text, char ch, int index) {
 
         text = operatenage(text);
         double[] dob = getparams(text,index);
@@ -367,7 +365,7 @@ public class OperateString2 {
      * @param x
      * @return
      */
-    private double str_fun01(String fun,double x) {
+    private double str_fun01(String fun, double x) {
 
         double param = 0;
         switch(fun) {
@@ -378,15 +376,15 @@ public class OperateString2 {
             case "(":
                 param = x; break;
             case "!" :{
-                if(x<0) {
+                if (x < 0 || x != (int) x) {
                     // 错误：阶乘函数参数只能为非负整数！
                     flag = false;
-                }else if(x > 16) {
+                } else if (x > 16) {
                     // 错误：结果超过整形数范围！
                     flag = false;
+                } else {
+                    param = factorial((int) x);
                 }
-                else
-                    param = (double) factorial((int) x);
                 break;
             }
             case "√":{//genhao

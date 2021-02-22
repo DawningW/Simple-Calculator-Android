@@ -97,6 +97,9 @@ public class CalculationUnitTest {
         for (int i = 1; i < 10; ++i) {
             assertEquals(String.valueOf(factorial(i)), operator.calculate(i + "!"));
         }
+        assertEquals("114", operator.calculate("5!-3!"));
+        assertEquals("24", operator.calculate("4*3!"));
+        assertEquals("错误", operator.calculate("2.33!"));
     }
 
     @Test

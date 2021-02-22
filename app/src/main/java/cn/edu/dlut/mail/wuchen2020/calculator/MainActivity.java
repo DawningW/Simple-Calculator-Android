@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.button_div) {
             append("/");
         } else if (id == R.id.button_E) {
-            append("*10^");
+            append("E");
         } else if (id == R.id.button_factorial) {
             append("!");
         } else if (id == R.id.button_lbracket) {
